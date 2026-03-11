@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MultiPIP - 多视频画中画</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            width: 380px;
+            max-height: 650px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+        }
+        .header {
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .header p {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+        .content {
+            padding: 16px;
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .video-list {
+            margin-top: 16px;
+        }
+        .video-item {
+            background: #16213e;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+        .video-item-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        .video-thumb {
+            width: 60px;
+            height: 34px;
+            background: #0f3460;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #888;
+            flex-shrink: 0;
+        }
+        .video-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .video-title {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .video-status {
+            font-size: 11px;
+            color: #888;
+        }
+        .video-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .action-btn {
+            flex: 1;
+            padding: 8px 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            background: #0f3460;
+            color: #667eea;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .action-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        .action-btn.secondary {
+            background: #1a1a2e;
+            color: #8b5cf6;
+        }
+        .action-btn.secondary:hover {
+            background: #8b5cf6;
+            color: white;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        .status-bar {
+            padding: 8px 16px;
+            background: #0f3460;
+            font-size: 11px;
+            color: #888;
+            text-align: center;
+        }
+        .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #667eea;
+            margin: 16px 0 8px 0;
+            padding-bottom: 4px;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+        }
+        .window-item {
+            background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .window-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .window-indicator {
+            width: 8px;
+            height: 8px;
+            background: #4ade80;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .window-title {
+            font-size: 12px;
+            color: #ccc;
+        }
+        .tips {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 12px;
+            font-size: 11px;
+            color: #a5b4fc;
+        }
+        .tips strong {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎬 MultiPIP</h1>
+        <p>多视频画中画播放器</p>
+    </div>
+    <div class="content">
+        <button class="btn btn-primary" id="scanBtn">扫描当前页面视频</button>
+        
+        <div id="activeWindowsSection" style="display: none;">
+            <div class="section-title">📺 活跃画中画窗口</div>
+            <div id="activeWindowsList"></div>
+        </div>
+        
+        <div class="section-title">🎥 检测到的视频</div>
+        <div class="video-list" id="videoList">
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                    <path d="M8 10l4 2 4-2"></path>
+                </svg>
+                <p>点击上方按钮扫描视频</p>
+            </div>
+        </div>
+        
+        <div class="tips">
+            <strong>💡 使用提示：</strong><br>
+            • <strong>独立窗口</strong>：可同时打开多个，完全拖出浏览器！
+        </div>
+    </div>
+    <div class="status-bar" id="statusBar">等待扫描...</div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

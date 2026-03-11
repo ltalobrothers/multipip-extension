@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "多视频画中画 - MultiPIP",
+  "version": "1.0.0",
+  "description": "同时显示多个网页视频的画中画功能，支持HLS流、音量控制和智能布局",
+  "permissions": ["activeTab", "scripting", "storage", "tabs", "windows"],
+  "host_permissions": ["<all_urls>"],
+  "web_accessible_resources": [
+    {
+      "resources": ["player.html", "player.js"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
